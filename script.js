@@ -10,6 +10,8 @@ async function getUser() {
         return;
     }
 
+     profile.innerHTML = "<p>Loading...</p>";
+
     try {
         const response = await fetch(
             `https://api.github.com/users/${username}`
@@ -54,3 +56,8 @@ async function getUser() {
 }
 
 searchBtn.addEventListener("click", getUser);
+usernameInput.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+        getUser();
+    }
+});
