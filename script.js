@@ -3,6 +3,25 @@ const searchBtn = document.getElementById("searchBtn");
 const profile = document.getElementById("profile");
 
 
+
+function handleResponse(response) {
+
+    if (response.status === 404) {
+        throw new Error("Resource not found");
+    }
+
+    if (response.status === 403) {
+        throw new Error("GitHub API rate limit exceeded");
+    }
+
+    if (!response.ok) {
+        throw new Error("Something went wrong");
+    }
+
+    return response;
+}
+
+
 // ========================================
 // 1. Get GitHub User
 // ========================================
@@ -13,9 +32,7 @@ async function getUser(username) {
         `https://api.github.com/users/${username}`
     );
 
-    if (!response.ok) {
-        throw new Error("User not found");
-    }
+    handleResponse(response);
 
     const data = await response.json();
 
@@ -33,9 +50,7 @@ async function getRepositories(username) {
         `https://api.github.com/users/${username}/repos`
     );
 
-    if (!response.ok) {
-        throw new Error("Unable to fetch repositories");
-    }
+    handleResponse(response);
 
     const repositories = await response.json();
 
@@ -49,7 +64,8 @@ async function getRepositories(username) {
 
 function displayProfile(data, repositories) {
 
-    const repoHTML = repositories
+    const repoHTML = [...repositories]
+        .sort((a, b) => b.stargazers_count - a.stargazers_count)
         .slice(0, 5)
         .map(repo => `
             <div class="repo">
@@ -160,35 +176,28 @@ function displayProfile(data, repositories) {
 // ========================================
 // 4. Handle Search
 // ========================================
-
 async function handleSearch() {
 
     const username = usernameInput.value.trim();
 
-    // Check empty input
     if (username === "") {
-
         profile.innerHTML =
             "<p>Please enter a GitHub username.</p>";
-
         return;
     }
 
-
-    // Show loading
+    // Loading state
+    searchBtn.disabled = true;
+    searchBtn.textContent = "Loading...";
     profile.innerHTML = "<p>Loading...</p>";
-
 
     try {
 
-        // Run both API requests at the same time
         const [data, repositories] = await Promise.all([
             getUser(username),
             getRepositories(username)
         ]);
 
-
-        // Display the result
         displayProfile(data, repositories);
 
     } catch (error) {
@@ -198,9 +207,14 @@ async function handleSearch() {
         profile.innerHTML = `
             <p>${error.message}</p>
         `;
+
+    } finally {
+
+        // Always restore button
+        searchBtn.disabled = false;
+        searchBtn.textContent = "Search";
     }
 }
-
 
 // ========================================
 // 5. Event Listeners
