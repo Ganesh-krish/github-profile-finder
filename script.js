@@ -43,9 +43,19 @@ async function getUser() {
                         ${repo.description || "No description"}
                     </p>
 
-                    <span>
-                        ${repo.language || "Unknown"}
-                    </span>
+                    <div class="repo-info">
+                        <span>
+                            ⭐ ${repo.stargazers_count}
+                        </span>
+
+                        <span>
+                            🍴 ${repo.forks_count}
+                        </span>
+
+                        <span>
+                            ${repo.language || "Unknown"}
+                        </span>
+                    </div>
 
                 </div>
             `)
@@ -85,6 +95,10 @@ async function getUser() {
                 <div class="repositories">
                     ${repoHTML}
                 </div>
+
+                <a  href="https://github.com/${data.login}?tab=repositories"  target="_blank">
+                    View All Repositories
+                </a>
 
             </div>
         `;
